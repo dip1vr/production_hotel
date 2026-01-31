@@ -1,0 +1,61 @@
+
+> hotel_booking@0.1.0 build
+> next build
+
+▲ Next.js 16.1.4 (Turbopack)
+
+  Creating an optimized production build ...
+Error: Can't resolve 'tailwindcss-animate' in 'E:\hotel_booking\src\app'
+    [2m[at finishWithoutResolve (E:\hotel_booking\node_modules\enhanced-resolve\lib\Resolver.js:565:18)][0m
+    [2m[at E:\hotel_booking\node_modules\enhanced-resolve\lib\Resolver.js:657:14][0m
+    [2m[at E:\hotel_booking\node_modules\enhanced-resolve\lib\Resolver.js:718:5][0m
+    [2m[at eval (eval at create (E:\hotel_booking\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at E:\hotel_booking\node_modules\enhanced-resolve\lib\Resolver.js:718:5][0m
+    [2m[at eval (eval at create (E:\hotel_booking\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:27:1)][0m
+    [2m[at E:\hotel_booking\node_modules\enhanced-resolve\lib\DescriptionFilePlugin.js:89:43][0m
+    [2m[at E:\hotel_booking\node_modules\enhanced-resolve\lib\Resolver.js:718:5][0m
+    [2m[at eval (eval at create (E:\hotel_booking\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:15:1)][0m
+    [2m[at E:\hotel_booking\node_modules\enhanced-resolve\lib\Resolver.js:718:5][0m {
+  details: "resolve 'tailwindcss-animate' in 'E:\\hotel_booking\\src\\app'\n" +
+    '  Parsed request is a module\n' +
+    '  using description file: E:\\hotel_booking\\package.json (relative path: ./src/app)\n' +
+    '    resolve as module\n' +
+    "      E:\\hotel_booking\\src\\app\\node_modules doesn't exist or is not a directory\n" +
+    "      E:\\hotel_booking\\src\\node_modules doesn't exist or is not a directory\n" +
+    '      looking for modules in E:\\hotel_booking\\node_modules\n' +
+    '        single file module\n' +
+    '          using description file: E:\\hotel_booking\\package.json (relative path: ./node_modules/tailwindcss-animate)\n' +
+    '            no extension\n' +
+    "              E:\\hotel_booking\\node_modules\\tailwindcss-animate doesn't exist\n" +
+    '            .js\n' +
+    "              E:\\hotel_booking\\node_modules\\tailwindcss-animate.js doesn't exist\n" +
+    '            .json\n' +
+    "              E:\\hotel_booking\\node_modules\\tailwindcss-animate.json doesn't exist\n" +
+    '            .node\n' +
+    "              E:\\hotel_booking\\node_modules\\tailwindcss-animate.node doesn't exist\n" +
+    '            .ts\n' +
+    "              E:\\hotel_booking\\node_modules\\tailwindcss-animate.ts doesn't exist\n" +
+    "        E:\\hotel_booking\\node_modules\\tailwindcss-animate doesn't exist\n" +
+    "      E:\\node_modules doesn't exist or is not a directory"
+}
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: tailwindcss: E:\hotel_booking\src\app\globals.css:1:1: Can't resolve 'tailwindcss-animate' in 'E:\hotel_booking\src\app'
+    at Input.error (node_modules/postcss/lib/input.js:135:16) [E:\hotel_booking\.next\build\chunks\node_modules_fe693df6._.js:4651:22]
+    at Root.error (node_modules/postcss/lib/node.js:146:32) [E:\hotel_booking\.next\build\chunks\node_modules_fe693df6._.js:928:38]
+    [at Object.Once (E:\hotel_booking\node_modules\@tailwindcss\postcss\dist\index.js:10:6911)]
+    at async LazyResult.runAsync (node_modules/postcss/lib/lazy-result.js:293:11) [E:\hotel_booking\.next\build\chunks\node_modules_fe693df6._.js:6206:21]
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [E:\hotel_booking\.next\build\chunks\[root-of-the-server]__51225daf._.js:146:36]
+    at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23) [E:\hotel_booking\.next\build\chunks\[root-of-the-server]__974941ed._.js:443:31]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [E:\hotel_booking\.next\build\chunks\[root-of-the-server]__51225daf._.js:146:36])
+    at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23) [E:\hotel_booking\.next\build\chunks\[root-of-the-server]__974941ed._.js:443:31])
