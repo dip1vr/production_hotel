@@ -43,7 +43,7 @@ export function Hero() {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className="font-serif text-4xl md:text-7xl lg:text-8xl font-bold mb-4 drop-shadow-2xl tracking-tight"
                 >
-                    Shyam Heritage <span className="block mt-2">Palace</span>
+                    Hotel Lord <span className="block mt-2">Krishna</span>
                 </motion.h1>
 
                 {/* Stars */}
@@ -93,7 +93,7 @@ export function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.7 }}
-                    className="flex flex-col sm:flex-row gap-4 mb-16"
+                    className="flex flex-col sm:flex-row gap-4 mb-16 mt-60 md:mt-24"
                 >
                     <Button
                         size="lg"
@@ -120,7 +120,7 @@ export function Hero() {
                     className="grid grid-cols-3 gap-2 md:gap-6 w-full max-w-4xl"
                 >
                     {[
-                        { label: "Luxury Rooms", value: "50+" },
+                        { label: "Luxury Rooms", value: "20+" },
                         { label: "Guest Rating", value: "4.9★" },
                         { label: "Happy Guests", value: "10K+" },
                     ].map((stat, index) => (

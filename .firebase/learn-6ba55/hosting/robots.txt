@@ -1,0 +1,6 @@
+User-Agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+
+Sitemap: https://shyamheritage.com/sitemap.xml

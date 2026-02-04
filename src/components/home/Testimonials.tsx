@@ -259,27 +259,29 @@ export function Testimonials() {
 
                                 {user && review.userId === user.uid && (
                                     <>
-                                        <div className="absolute top-4 right-4 flex gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    setEditingReview(review);
-                                                    setShowAddReview(true);
-                                                }}
-                                                className="p-2 bg-slate-100 hover:bg-orange-100 rounded-full text-slate-500 hover:text-orange-600 transition-colors"
-                                                title="Edit Review"
-                                            >
-                                                <Pencil className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(review.id)}
-                                                className="p-2 bg-slate-100 hover:bg-red-100 rounded-full text-slate-500 hover:text-red-600 transition-colors"
-                                                title="Delete Review"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <div className="absolute top-4 right-20 bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                            Your Review
+                                        <div className="absolute top-4 right-4 flex items-center gap-3">
+                                            <div className="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                Your Review
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingReview(review);
+                                                        setShowAddReview(true);
+                                                    }}
+                                                    className="p-2 bg-slate-100 hover:bg-orange-100 rounded-full text-slate-500 hover:text-orange-600 transition-colors"
+                                                    title="Edit Review"
+                                                >
+                                                    <Pencil className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(review.id)}
+                                                    className="p-2 bg-slate-100 hover:bg-red-100 rounded-full text-slate-500 hover:text-red-600 transition-colors"
+                                                    title="Delete Review"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </>
                                 )}

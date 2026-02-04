@@ -2,9 +2,41 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 
 export function AboutSection() {
+    const [images, setImages] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const defaultImages = [
+        "https://images.unsplash.com/photo-1657020440981-db8c7d1ae4df?q=80&w=986&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1701096804916-9161cac36cda?q=80&w=987&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1657020681754-6813dde5c34d?q=80&w=1172&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1657020440989-35fdb0aabac5?q=80&w=1172&auto=format&fit=crop"
+    ];
+
+    useEffect(() => {
+        const q = query(collection(db, "about_gallery"), orderBy("createdAt", "desc"), limit(4));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const fetchedImages = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setImages(fetchedImages);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const getImage = (index: number) => {
+        if (loading) return defaultImages[index];
+        return images[index]?.src || defaultImages[index];
+    };
+
     return (
         <section id="about" className="pt-24 pb-24 md:pb-48 bg-orange-50/30 overflow-hidden">
             <div className="container mx-auto px-4">
@@ -49,19 +81,21 @@ export function AboutSection() {
                             <div className="md:col-span-7 space-y-4 pt-0 md:pt-12">
                                 <div className="relative h-64 md:h-80 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white transform hover:-translate-y-2 transition-transform duration-500">
                                     <Image
-                                        src="https://images.unsplash.com/photo-1657020440981-db8c7d1ae4df?q=80&w=986&auto=format&fit=crop"
+                                        src={getImage(0)}
                                         alt="Khatu Shyam Ji Temple"
                                         fill
                                         className="object-cover"
+                                        unoptimized
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                                 </div>
                                 <div className="relative h-40 md:h-48 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white transform hover:-translate-y-2 transition-transform duration-500">
                                     <Image
-                                        src="https://images.unsplash.com/photo-1701096804916-9161cac36cda?q=80&w=987&auto=format&fit=crop"
+                                        src={getImage(1)}
                                         alt="Divine Atmosphere"
                                         fill
                                         className="object-cover"
+                                        unoptimized
                                     />
                                 </div>
                             </div>
@@ -70,18 +104,20 @@ export function AboutSection() {
                             <div className="md:col-span-5 space-y-4">
                                 <div className="relative h-40 md:h-48 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white transform hover:-translate-y-2 transition-transform duration-500">
                                     <Image
-                                        src="https://images.unsplash.com/photo-1657020681754-6813dde5c34d?q=80&w=1172&auto=format&fit=crop"
+                                        src={getImage(2)}
                                         alt="Worship"
                                         fill
                                         className="object-cover"
+                                        unoptimized
                                     />
                                 </div>
                                 <div className="relative h-56 md:h-64 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white transform hover:-translate-y-2 transition-transform duration-500">
                                     <Image
-                                        src="https://images.unsplash.com/photo-1657020440989-35fdb0aabac5?q=80&w=1172&auto=format&fit=crop"
+                                        src={getImage(3)}
                                         alt="Temple View"
                                         fill
                                         className="object-cover"
+                                        unoptimized
                                     />
                                 </div>
                                 {/* Floating Badge */}
