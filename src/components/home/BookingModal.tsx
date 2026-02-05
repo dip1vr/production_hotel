@@ -50,7 +50,12 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
 
     // Payment & Flow State
     const [step, setStep] = useState(1); // 1: Details, 2: Payment, 3: Ticket
-    const [paymentMethod, setPaymentMethod] = useState("card"); // card, upi, wallet
+    const [paymentMethod, setPaymentMethod] = useState("upi");
+    const [paymentType, setPaymentType] = useState<'full' | 'advance'>('advance'); // 'full' or 'advance'
+    const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+    const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [bookingId, setBookingId] = useState("");
@@ -63,7 +68,10 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
             setBookingId("");
             setError("");
             setIsDownloading(false);
-            setPaymentMethod("card");
+            setPaymentMethod("upi");
+            setPaymentType('advance');
+            setScreenshotFile(null);
+            setScreenshotPreview(null);
             // Optional: retain dates/guests if desired, or reset them too.
             // For now, keeping dates/guests as they might be pre-filled from context or previous selection logic.
         }
@@ -139,6 +147,14 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
     const taxAmount = Math.round(basePrice * gstRate);
     const totalPrice = basePrice + taxAmount;
 
+    // Advance Payment Calculation (20%)
+    // Advance Payment Calculation (20%)
+    const advanceAmount = Math.round(totalPrice * 0.20);
+
+    // Dynamic Amounts based on Selection
+    const payableAmount = paymentType === 'full' ? totalPrice : advanceAmount;
+    const pendingAmount = totalPrice - payableAmount;
+
     if (!isOpen || !room) return null;
 
     const generateBookingId = () => {
@@ -190,14 +206,50 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
         }
     };
 
-    const handleFinalPayment = async () => {
-        setIsSubmitting(true);
-        const newBookingId = generateBookingId();
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setScreenshotFile(file);
+            setScreenshotPreview(URL.createObjectURL(file));
+        }
+    };
 
-        // Simulate Payment Delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+    const handleFinalPayment = async () => {
+        if (!screenshotFile) {
+            setError("Please upload the payment screenshot.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setIsUploading(true);
 
         try {
+            // 1. Upload to ImgBB
+            const formData = new FormData();
+            formData.append('image', screenshotFile);
+
+            // Use environment variable for key
+            const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY || '87ac08b1fe96f1eec8ec5a764548dd56';
+            const uploadRes = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const uploadData = await uploadRes.json();
+
+            if (!uploadData.success) {
+                throw new Error("Failed to upload screenshot: " + (uploadData.error?.message || "Unknown error"));
+            }
+
+            const screenshotUrl = uploadData.data.url;
+            setIsUploading(false);
+
+            // 2. Create Booking
+            const newBookingId = generateBookingId();
+
+            // Simulate Payment Delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             // Create user profile reference (update with analysis data)
             if (user) {
                 const userRef = doc(db, "users", user.uid);
@@ -209,12 +261,11 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                 }, { merge: true });
             }
 
-
             // Save structured booking
             await setDoc(doc(db, "bookings", newBookingId), {
                 bookingId: newBookingId,
-                userId: user?.uid, // Top-level for querying
-                userEmail: user?.email, // Top-level for querying
+                userId: user?.uid,
+                userEmail: user?.email,
                 guest: {
                     userId: user?.uid,
                     name: name,
@@ -230,25 +281,30 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                     roomsCount
                 },
                 room: {
+                    id: room.id,
                     name: room.name,
                     image: room.image,
                     basePricePerNight: parsePrice(room.price)
                 },
                 payment: {
-                    method: paymentMethod,
+                    method: "upi_qr_manual",
                     baseAmount: basePrice,
                     taxAmount: taxAmount,
                     totalAmount: totalPrice,
+                    advanceAmount: advanceAmount,
+                    paidAmount: payableAmount,
+                    pendingAmount: pendingAmount,
+                    paymentType: paymentType,
                     currency: "INR",
-                    status: "paid"
+                    status: "verification_pending",
+                    screenshotUrl: screenshotUrl
                 },
-                status: "confirmed",
+                status: "pending", // Pending Admin Approval
                 createdAt: serverTimestamp(),
             });
 
             // Manage Invitation by Date
             if (room && room.id && checkIn && checkOut) {
-                // Helper to get all dates in range
                 const getDatesInRange = (startDate: Date, endDate: Date) => {
                     const date = new Date(startDate.getTime());
                     const dates = [];
@@ -259,9 +315,7 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                     return dates;
                 };
 
-                const dates = getDatesInRange(checkIn, checkOut); // Already Date objects
-
-                // Update availability for each date
+                const dates = getDatesInRange(checkIn, checkOut);
                 const updatePromises = dates.map(dateStr => {
                     const availabilityRef = doc(db, "rooms", room.id.toString(), "availability", dateStr);
                     return setDoc(availabilityRef, {
@@ -274,11 +328,12 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
 
             setBookingId(newBookingId);
             setStep(3);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error adding booking: ", err);
-            setError("Payment failed. Please try again.");
+            setError("Payment failed. Please try again. " + (err.message || ''));
         } finally {
             setIsSubmitting(false);
+            setIsUploading(false);
         }
     };
     const handleDownloadTicket = async () => {
@@ -335,13 +390,13 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={step === 3 ? onClose : undefined}
-                        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+                        className="fixed inset-0 z-[60] flex items-center justify-center p-4 pointer-events-none"
                     >
                         <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl pointer-events-auto overflow-hidden max-h-[90vh] flex flex-col">
                             {/* Header - Hidden on Ticket Step for immersive look */}
@@ -349,10 +404,10 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                                 <div className="bg-slate-900 p-6 flex items-start justify-between shrink-0">
                                     <div>
                                         <h2 className="text-2xl font-serif font-bold text-white mb-1">
-                                            {step === 1 ? "Confirm Details" : "Payment (Demo)"}
+                                            {step === 1 ? "Confirm Details" : "Payment"}
                                         </h2>
                                         <p className="text-slate-400 text-sm">
-                                            {step === 1 ? "Step 1 of 2" : "Test Mode - No real payment required"}
+                                            {step === 1 ? "Step 1 of 2" : ""}
                                         </p>
                                     </div>
                                     <button onClick={onClose} className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">
@@ -374,7 +429,7 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                                                 <Popover>
                                                     <PopoverTrigger asChild>
                                                         <button className={cn(
-                                                            "w-full pl-9 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm font-medium outline-none text-left flex items-center gap-2",
+                                                            "w-full pl-9 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm font-medium outline-none text-left flex items-center gap-2 relative",
                                                             !checkIn && "text-slate-500"
                                                         )}>
                                                             <CalendarIcon className="w-4 h-4 text-slate-400 absolute left-3" />
@@ -430,7 +485,7 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                                                 <Popover>
                                                     <PopoverTrigger asChild>
                                                         <button className={cn(
-                                                            "w-full pl-9 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm font-medium outline-none text-left flex items-center gap-2",
+                                                            "w-full pl-9 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm font-medium outline-none text-left flex items-center gap-2 relative",
                                                             !checkOut && "text-slate-500"
                                                         )}>
                                                             <CalendarIcon className="w-4 h-4 text-slate-400 absolute left-3" />
@@ -652,153 +707,165 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
 
                                 {step === 2 && (
                                     <div className="space-y-6">
-                                        <div className="bg-slate-50 p-4 rounded-xl space-y-3">
-                                            <h3 className="font-bold text-slate-900">Order Summary</h3>
-                                            <div className="space-y-2 text-sm">
-                                                <div className="flex justify-between text-slate-600">
-                                                    <span>Room Charges ({roomsCount} x {totalNights} nights)</span>
-                                                    <span>₹{basePrice.toLocaleString()}</span>
-                                                </div>
-                                                <div className="flex justify-between text-slate-600">
-                                                    <span>GST ({(gstRate * 100)}%)</span>
-                                                    <span>₹{taxAmount.toLocaleString()}</span>
-                                                </div>
-                                                <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900 text-lg">
-                                                    <span>To Pay</span>
-                                                    <span>₹{totalPrice.toLocaleString()}</span>
+
+                                        {/* Payment Type Selection */}
+                                        <div className="bg-slate-50 p-1 rounded-xl flex">
+                                            <button
+                                                onClick={() => setPaymentType('advance')}
+                                                className={cn(
+                                                    "flex-1 py-3 px-4 rounded-lg text-sm font-bold transition-all",
+                                                    paymentType === 'advance' ? "bg-white text-orange-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                                )}
+                                            >
+                                                Pay Advance (20%)
+                                            </button>
+                                            <button
+                                                onClick={() => setPaymentType('full')}
+                                                className={cn(
+                                                    "flex-1 py-3 px-4 rounded-lg text-sm font-bold transition-all",
+                                                    paymentType === 'full' ? "bg-white text-orange-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                                )}
+                                            >
+                                                Pay Full Amount
+                                            </button>
+                                        </div>
+
+                                        <div className="bg-orange-50 p-5 rounded-2xl border border-orange-100 flex flex-col items-center text-center space-y-4">
+                                            <h3 className="font-bold text-orange-900 text-lg">Scan to Pay</h3>
+                                            <p className="text-sm text-orange-700">
+                                                Please pay <strong className="text-xl">₹{payableAmount.toLocaleString()}</strong> to confirm.
+                                            </p>
+
+                                            <div className="bg-white p-3 rounded-xl shadow-sm border border-orange-100">
+                                                <img
+                                                    src="/payment-qr.jpg"
+                                                    alt="Payment QR Code"
+                                                    className="w-48 h-48 object-contain"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">UPI ID</p>
+                                                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-orange-200">
+                                                    <span className="font-mono text-slate-900 font-bold">8104787882@ybl</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3">
-                                            <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider">Select Payment Method</h3>
-                                            <div className="grid grid-cols-1 gap-3">
-                                                <button
-                                                    onClick={() => setPaymentMethod('card')}
-                                                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'card' ? 'border-orange-500 bg-orange-50/50' : 'border-slate-100 hover:border-slate-200'}`}
-                                                >
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === 'card' ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-500'}`}>
-                                                        <CreditCard className="w-5 h-5" />
+                                        <div className="space-y-4">
+                                            <div className="bg-slate-50 p-4 rounded-xl space-y-3">
+                                                <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider">Payment Breakdown</h3>
+                                                <div className="space-y-2 text-sm">
+                                                    <div className="flex justify-between text-slate-600">
+                                                        <span>Total Booking Value</span>
+                                                        <span>₹{totalPrice.toLocaleString()}</span>
                                                     </div>
-                                                    <div className="text-left">
-                                                        <p className="font-bold text-slate-900">Credit / Debit Card</p>
-                                                        <p className="text-xs text-slate-500">Visa, Mastercard, RuPay</p>
-                                                    </div>
-                                                    {paymentMethod === 'card' && <CheckCircle className="w-5 h-5 text-orange-500 ml-auto" />}
-                                                </button>
 
-                                                <button
-                                                    onClick={() => setPaymentMethod('upi')}
-                                                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'upi' ? 'border-orange-500 bg-orange-50/50' : 'border-slate-100 hover:border-slate-200'}`}
-                                                >
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === 'upi' ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-500'}`}>
-                                                        <Smartphone className="w-5 h-5" />
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <p className="font-bold text-slate-900">UPI</p>
-                                                        <p className="text-xs text-slate-500">GPay, PhonePe, Paytm</p>
-                                                    </div>
-                                                    {paymentMethod === 'upi' && <CheckCircle className="w-5 h-5 text-orange-500 ml-auto" />}
-                                                </button>
+                                                    {paymentType === 'advance' ? (
+                                                        <>
+                                                            <div className="flex justify-between text-orange-600 font-bold bg-orange-50/50 p-2 rounded-lg">
+                                                                <span>Advance Payable (20%)</span>
+                                                                <span>₹{advanceAmount.toLocaleString()}</span>
+                                                            </div>
+                                                            <div className="flex justify-between text-slate-500 text-xs px-2">
+                                                                <span>Balance Due at Hotel</span>
+                                                                <span>₹{pendingAmount.toLocaleString()}</span>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="flex justify-between text-green-600 font-bold bg-green-50/50 p-2 rounded-lg">
+                                                            <span>Full Payment</span>
+                                                            <span>₹{totalPrice.toLocaleString()}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Screenshot Upload */}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-slate-900">Upload Payment Screenshot <span className="text-red-500">*</span></label>
+                                                <div className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 transition-colors relative">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        required
+                                                        onChange={handleFileChange}
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    />
+
+                                                    {screenshotPreview ? (
+                                                        <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                                                            <img src={screenshotPreview} alt="Preview" className="w-full h-full object-contain" />
+                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs opacity-0 hover:opacity-100 transition-opacity">
+                                                                Click to change
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-2 py-4 pointer-events-none">
+                                                            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+                                                                <Download className="w-5 h-5 rotate-180" />
+                                                            </div>
+                                                            <div className="text-xs text-slate-500">
+                                                                <span className="font-bold text-orange-600">Click to upload</span> or drag and drop
+                                                                <br /> JPG, PNG (Max 5MB)
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-slate-500">
+                                                    Required for payment verification.
+                                                </p>
                                             </div>
                                         </div>
+
+                                        <Button
+                                            onClick={handleFinalPayment}
+                                            disabled={isSubmitting}
+                                            className="w-full bg-orange-600 hover:bg-orange-700 text-white h-14 rounded-xl text-lg font-bold shadow-lg shadow-orange-600/20 transition-all"
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                                    {isUploading ? "Uploading Proof..." : "Processing Booking..."}
+                                                </>
+                                            ) : (
+                                                "Submit & Request Booking"
+                                            )}
+                                        </Button>
                                     </div>
                                 )}
 
                                 {step === 3 && (
-                                    <div className="text-center py-2">
-                                        <TicketCard
-                                            ref={ticketRef}
-                                            bookingId={bookingId}
-                                            roomName={room.name}
-                                            checkIn={checkIn ? format(checkIn, "dd MMM yyyy") : ""}
-                                            checkOut={checkOut ? format(checkOut, "dd MMM yyyy") : ""}
-                                            guestName={name}
-                                            totalPrice={totalPrice}
-                                            className="mb-6"
-                                        />
-
-                                        <p className="text-sm text-slate-500 mb-6">A confirmation email has been sent to your email address.</p>
-
-                                        <div className="flex flex-col gap-3">
-                                            <Button
-                                                onClick={handleDownloadTicket}
-                                                disabled={isDownloading}
-                                                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 h-12 rounded-xl text-base font-bold transition-all flex items-center justify-center gap-2"
-                                            >
-                                                {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                                                {isDownloading ? "Downloading..." : "Download Ticket"}
-                                            </Button>
-
-                                            <Button
-                                                onClick={async () => {
-                                                    if (!confirm("Are you sure you want to cancel this booking?")) return;
-                                                    setIsSubmitting(true);
-                                                    try {
-                                                        // 1. Mark booking as cancelled
-                                                        await updateDoc(doc(db, "bookings", bookingId), {
-                                                            status: "cancelled",
-                                                            cancelledAt: serverTimestamp()
-                                                        });
-
-                                                        // 2. Restore Availability
-                                                        if (room && room.id && checkIn && checkOut) {
-                                                            const getDatesInRange = (startDate: Date, endDate: Date) => {
-                                                                const date = new Date(startDate.getTime());
-                                                                const dates = [];
-                                                                while (date < endDate) {
-                                                                    dates.push(format(date, "yyyy-MM-dd"));
-                                                                    date.setDate(date.getDate() + 1);
-                                                                }
-                                                                return dates;
-                                                            };
-
-
-                                                            const dates = getDatesInRange(checkIn, checkOut);
-
-                                                            // Remove debug alert
-                                                            // alert(`Restoring ${roomsCount} room(s) for dates: ${dates.join(", ")}`);
-
-                                                            const updatePromises = dates.map(dateStr => {
-                                                                const availabilityRef = doc(db, "rooms", room.id.toString(), "availability", dateStr);
-                                                                return setDoc(availabilityRef, {
-                                                                    bookedCount: increment(-roomsCount)
-                                                                }, { merge: true });
-                                                            });
-                                                            await Promise.all(updatePromises);
-
-                                                            // Update local state to reflect cancellation immediately
-                                                            setBookedDates(prev => {
-                                                                const newDates = { ...prev };
-                                                                dates.forEach(dateStr => {
-                                                                    if (newDates[dateStr]) {
-                                                                        newDates[dateStr] = Math.max(0, newDates[dateStr] - roomsCount);
-                                                                    }
-                                                                });
-                                                                return newDates;
-                                                            });
-
-                                                            alert("Booking cancelled. Availability has been restored.");
-                                                            onClose();
-                                                        }
-                                                    } catch (e) {
-                                                        console.error("Error cancelling booking:", e);
-                                                        setError("Failed to cancel booking");
-                                                    } finally {
-                                                        setIsSubmitting(false);
-                                                    }
-                                                }}
-                                                className="w-full bg-red-50 hover:bg-red-100 text-red-600 h-12 rounded-xl text-base font-bold transition-all"
-                                            >
-                                                Cancel Booking
-                                            </Button>
-
-                                            <Button onClick={onClose} className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 rounded-xl text-base font-bold transition-all">
-                                                Close
-                                            </Button>
+                                    <div className="text-center py-8">
+                                        <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <CheckCircle className="w-10 h-10 text-orange-600" />
                                         </div>
-                                    </div>
 
+                                        <h2 className="text-2xl font-bold text-slate-900 mb-2">Booking Request Sent</h2>
+                                        <p className="text-slate-600 mb-8 max-w-xs mx-auto">
+                                            Your booking request ID is <span className="font-mono font-bold text-slate-900">{bookingId}</span>. <br />
+                                            We will verify your payment and confirm your booking shortly.
+                                        </p>
+
+                                        <div className="bg-slate-50 rounded-xl p-4 mb-8 text-sm text-left mx-4 border border-slate-100">
+                                            <div className="flex justify-between mb-2">
+                                                <span className="text-slate-500">Status</span>
+                                                <span className="font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">Verification Pending</span>
+                                            </div>
+                                            <div className="flex justify-between mb-2">
+                                                <span className="text-slate-500">Paid Amount ({paymentType === 'full' ? 'Full' : 'Partial'})</span>
+                                                <span className="font-bold text-slate-900">₹{payableAmount.toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500">Payment Proof</span>
+                                                <span className="font-mono font-bold text-green-600 text-xs">Screenshot Uploaded</span>
+                                            </div>
+                                        </div>
+
+                                        <Button onClick={onClose} className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 rounded-xl text-base font-bold transition-all">
+                                            Close & Check Status Later
+                                        </Button>
+                                    </div>
                                 )}
 
                                 {error && (

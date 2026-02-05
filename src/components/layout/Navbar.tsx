@@ -17,6 +17,7 @@ const navLinks = [
     { name: "Rooms", href: "/#rooms" },
     { name: "Amenities", href: "/#amenities" },
     { name: "Dining", href: "/#dining" },
+    { name: "About", href: "/about" },
     { name: "Gallery", href: "/#gallery" },
     { name: "Contact", href: "/#contact" },
     { name: "Reviews", href: "/#reviews" },
@@ -80,13 +81,13 @@ export function Navbar() {
                                 "font-serif text-xl font-bold leading-none tracking-tight transition-colors",
                                 showSolidNav ? "text-slate-900" : "text-white"
                             )}>
-                                Shyam Heritage
+                                Hotel Lord
                             </span>
                             <span className={cn(
                                 "text-[0.65rem] tracking-[0.2em] uppercase font-semibold mt-1",
                                 showSolidNav ? "text-orange-600" : "text-white/80"
                             )}>
-                                Palace
+                                Krishna
                             </span>
                         </div>
                     </Link>

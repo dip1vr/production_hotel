@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, updateDoc, doc, Timestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, doc, Timestamp, increment, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import { Loader2, Calendar, MapPin, Users, XCircle, AlertCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
@@ -17,6 +18,7 @@ export interface Booking {
     bookingId: string; // Redundant but good to have in data
 
     room: {
+        id?: string;
         name: string;
         image: string;
         basePricePerNight: number;
@@ -39,6 +41,7 @@ export interface Booking {
 
     payment: {
         totalAmount: number;
+        paidAmount?: number;
         status: string;
     };
 
@@ -114,6 +117,34 @@ export default function MyBookingsPage() {
 
         setCancellingId(bookingId);
         try {
+            // Find booking details locally
+            const booking = bookings.find(b => b.id === bookingId);
+
+            // 1. Restore Availability (Decrement bookedCount)
+            if (booking?.room?.id && booking.stay?.checkIn && booking.stay?.checkOut) {
+                const roomId = booking.room.id.toString();
+                const start = new Date(booking.stay.checkIn);
+                const end = new Date(booking.stay.checkOut);
+
+                // Safety check: ensure dates are valid
+                if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                    const date = new Date(start);
+                    // Iterate nights (checkIn inclusive, checkOut exclusive)
+                    while (date < end) {
+                        const dateStr = format(date, "yyyy-MM-dd");
+                        const availRef = doc(db, "rooms", roomId, "availability", dateStr);
+
+                        // Decrement bookedCount
+                        await setDoc(availRef, {
+                            bookedCount: increment(-(booking.stay.roomsCount || 1))
+                        }, { merge: true });
+
+                        date.setDate(date.getDate() + 1);
+                    }
+                }
+            }
+
+            // 2. Mark Booking as Cancelled
             await updateDoc(doc(db, "bookings", bookingId), {
                 status: "cancelled"
             });
@@ -344,7 +375,8 @@ export default function MyBookingsPage() {
                                                     checkIn={booking.stay?.checkIn || booking.checkIn || ""}
                                                     checkOut={booking.stay?.checkOut || booking.checkOut || ""}
                                                     guestName={booking.guest?.name || booking.guestName}
-                                                    totalPrice={booking.payment?.totalAmount || booking.price}
+                                                    totalPrice={booking.payment?.paidAmount || booking.payment?.totalAmount || booking.price}
+                                                    status={booking.status}
                                                 />
                                             </div>
                                         </div>

@@ -9,6 +9,7 @@ interface TicketCardProps {
     guestName?: string;
     totalPrice?: string | number;
     className?: string;
+    status?: string;
 }
 
 export const TicketCard = forwardRef<HTMLDivElement, TicketCardProps>(({
@@ -18,8 +19,12 @@ export const TicketCard = forwardRef<HTMLDivElement, TicketCardProps>(({
     checkOut,
     guestName,
     totalPrice,
-    className
+    className,
+    status = 'confirmed'
 }, ref) => {
+    const isPending = status === 'pending' || status === 'verification_pending';
+    const isCancelled = status === 'cancelled';
+
     return (
         <div
             ref={ref}
@@ -32,11 +37,15 @@ export const TicketCard = forwardRef<HTMLDivElement, TicketCardProps>(({
             <div className="absolute left-2 right-2 top-1/2 -translate-y-1/2 border-t-2 border-dashed border-white/20"></div>
 
             <div className="relative z-10 pb-8 border-b border-white/10 mb-8">
-                <div className="inline-flex p-3 rounded-full bg-green-500/20 mb-4">
-                    <CheckCircle className="w-8 h-8 text-green-400" />
+                <div className={`inline-flex p-3 rounded-full mb-4 ${isPending ? 'bg-orange-500/20' : isCancelled ? 'bg-red-500/20' : 'bg-green-500/20'}`}>
+                    <CheckCircle className={`w-8 h-8 ${isPending ? 'text-orange-400' : isCancelled ? 'text-red-400' : 'text-green-400'}`} />
                 </div>
-                <h3 className="text-2xl font-serif font-bold mb-1">Booking Confirmed</h3>
-                <p className="text-white/60 text-sm">Thank you for your booking!</p>
+                <h3 className="text-2xl font-serif font-bold mb-1">
+                    {isPending ? 'Verification Pending' : isCancelled ? 'Booking Cancelled' : 'Booking Confirmed'}
+                </h3>
+                <p className="text-white/60 text-sm">
+                    {isPending ? 'Your payment is being verified.' : isCancelled ? 'This booking has been cancelled.' : 'Thank you for your booking!'}
+                </p>
             </div>
 
             <div className="relative z-10 text-left space-y-4">

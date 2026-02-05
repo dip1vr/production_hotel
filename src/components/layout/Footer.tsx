@@ -12,7 +12,7 @@ export function Footer() {
                     <div className="space-y-4">
                         <div className="flex flex-col">
                             <span className="font-serif text-2xl font-bold text-primary">
-                                Shyam Heritage
+                                Hotel Lord Krishna
                             </span>
                             <span className="text-xs tracking-widest uppercase text-muted-foreground">
                                 Palace
@@ -31,6 +31,8 @@ export function Footer() {
                             <li><Link href="#rooms" className="hover:text-primary transition-colors">Rooms & Suites</Link></li>
                             <li><Link href="#amenities" className="hover:text-primary transition-colors">Amenities</Link></li>
                             <li><Link href="#gallery" className="hover:text-primary transition-colors">Gallery</Link></li>
+                            <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+                            <li><Link href="/policies" className="hover:text-primary transition-colors">Hotel Policies</Link></li>
                         </ul>
                     </div>
 
@@ -65,7 +67,7 @@ export function Footer() {
                 </div>
 
                 <div className="border-t border-primary/10 pt-8 text-center text-sm text-muted-foreground">
-                    <p>&copy; {new Date().getFullYear()} Shyam Heritage Palace. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Hotel Lord Krishna Palace. All rights reserved.</p>
                 </div>
             </div>
         </footer>
