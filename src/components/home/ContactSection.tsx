@@ -98,7 +98,7 @@ export function ContactSection() {
                         {/* Right Side - Map Placeholder / Decorative Image */}
                         <div className="md:w-1/3 bg-orange-100 relative min-h-[300px] md:min-h-0">
                             <iframe
-                                title="Google Map location of Shyam Heritage Palace"
+                                title="Google Map location of Hotel Lord Krishna"
                                 src="https://maps.google.com/maps?q=Hotel+Lord+Krishna,+52,+Bawan+Bigha+road,+Behind+Nagar+Palika,+Khatoo,+Rajasthan+332602&t=&z=15&ie=UTF8&iwloc=&output=embed"
                                 width="100%"
                                 height="100%"

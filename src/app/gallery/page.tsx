@@ -82,7 +82,7 @@ export default function GalleryPage() {
                             transition={{ delay: 0.1 }}
                             className="text-slate-600 text-lg"
                         >
-                            A complete visual journey through Shyam Heritage Palace
+                            A complete visual journey through Hotel Lord Krishna
                         </motion.p>
                     </div>
 

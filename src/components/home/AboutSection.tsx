@@ -61,7 +61,7 @@ export function AboutSection() {
                                 <strong className="text-slate-900">Khatu Shyam Ji</strong>, revered as the incarnation of Barbarika, is the beacon of hope for millions. Pilgrims from across the world visit this holy land to seek his blessings, believing that a mere glimpse (Darshan) can alter one&apos;s destiny.
                             </p>
                             <p>
-                                Located just moments from the temple, <span className="text-orange-600 font-serif font-bold">Shyam Heritage Palace</span> serves as your spiritual oasis. We offer a serene retreat where you can prepare for your worship and relax in comfort after your prayers.
+                                Located just moments from the temple, <span className="text-orange-600 font-serif font-bold">Hotel Lord Krishna</span> serves as your spiritual oasis. We offer a serene retreat where you can prepare for your worship and relax in comfort after your prayers.
                             </p>
                         </div>
 

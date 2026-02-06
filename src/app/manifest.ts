@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'Shyam Heritage Palace',
+        name: 'Hotel Lord Krishna',
         short_name: 'Shyam Heritage',
         description: 'Luxury Hotel in Khatu Shyam Ji',
         start_url: '/',

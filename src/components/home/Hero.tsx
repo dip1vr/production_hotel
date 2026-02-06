@@ -13,7 +13,7 @@ export function Hero() {
             <div className="absolute inset-0 z-0">
                 <Image
                     src="https://i.ibb.co/fzvVwnjt/Chat-GPT-Image-Jan-25-2026-07-22-31-PM.png"
-                    alt="Shyam Heritage Palace Exterior"
+                    alt="Hotel Lord Krishna Exterior"
                     fill
                     priority
                     unoptimized

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/layout/Navbar";
 import { AuthProvider } from "@/context/AuthContext";
 import ChatWidget from "@/components/chat/ChatWidget";
+import { VisitorTracker } from "@/components/analytics/VisitorTracker";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({
@@ -14,20 +15,20 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://shyamheritage.com"),
-  title: "Shyam Heritage Palace | Luxury Hotel in Khatu Shyam Ji",
+  title: "Hotel Lord Krishna | Luxury Hotel in Khatu Shyam Ji",
   description: "Book luxury hotel rooms in Khatu Shyam Ji at best price. Experience royal hospitality, free cancellation & instant confirmation near the temple.",
-  keywords: ["Hotel in Khatu Shyam Ji", "Luxury Stay in Khatu", "Hotel near Khatu Shyam Temple", "Best Hotel in Khatu", "Shyam Heritage Palace", "Hotel Lord Krishna"],
+  keywords: ["Hotel in Khatu Shyam Ji", "Luxury Stay in Khatu", "Hotel near Khatu Shyam Temple", "Best Hotel in Khatu", "Hotel Lord Krishna"],
   openGraph: {
-    title: "Shyam Heritage Palace | Luxury Hotel in Khatu",
-    description: "Experience royal hospitality at Shyam Heritage Palace. Luxury rooms, modern amenities, and just steps away from Khatu Shyam Ji Temple.",
+    title: "Hotel Lord Krishna | Luxury Hotel in Khatu",
+    description: "Experience royal hospitality at Hotel Lord Krishna. Luxury rooms, modern amenities, and just steps away from Khatu Shyam Ji Temple.",
     url: "https://shyamheritage.com",
-    siteName: "Shyam Heritage Palace",
+    siteName: "Hotel Lord Krishna",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Shyam Heritage Palace Luxury Room",
+        alt: "Hotel Lord Krishna Luxury Room",
       },
     ],
     locale: "en_IN",
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shyam Heritage Palace | Luxury Stay",
+    title: "Hotel Lord Krishna | Luxury Stay",
     description: "Book premium hotel rooms in Khatu Shyam Ji. Best rates & instant confirmation.",
   },
   robots: {
@@ -57,10 +58,10 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Hotel",
-  "name": "Shyam Heritage Palace",
+  "name": "Hotel Lord Krishna",
   "alternateName": "Hotel Lord Krishna",
   "image": "https://shyamheritage.com/hotel-exterior.jpg",
-  "description": "Experience royal hospitality at Shyam Heritage Palace, just steps away from Khatu Shyam Ji Temple.",
+  "description": "Experience royal hospitality at Hotel Lord Krishna, just steps away from Khatu Shyam Ji Temple.",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "52, Bawan Bigha road, Behind Nagar Palika",
@@ -105,6 +106,7 @@ export default function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
+          <VisitorTracker />
           <Navbar />
           {children}
           <ChatWidget />

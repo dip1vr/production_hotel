@@ -69,7 +69,7 @@ export function Gallery() {
                         transition={{ delay: 0.1 }}
                         className="text-slate-600 text-lg"
                     >
-                        Explore the beauty and elegance of Shyam Heritage Palace
+                        Explore the beauty and elegance of Hotel Lord Krishna
                     </motion.p>
                 </div>
 

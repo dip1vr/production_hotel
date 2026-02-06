@@ -832,6 +832,13 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                                                 "Submit & Request Booking"
                                             )}
                                         </Button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep(1)}
+                                            className="w-full text-center text-slate-500 text-sm hover:text-slate-800 mt-4 font-medium"
+                                        >
+                                            Back to Details
+                                        </button>
                                     </div>
                                 )}
 
@@ -875,13 +882,12 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                                 )}
                             </div>
 
-                            {/* Footer Actions (Hidden on Ticket Step) */}
-                            {step !== 3 && (
+                            {/* Footer Actions (Hidden on Ticket Step and Payment Step) */}
+                            {step === 1 && (
                                 <div className="p-6 border-t border-slate-100 bg-slate-50 mt-auto">
                                     <Button
-                                        form={step === 1 ? "booking-form" : undefined}
-                                        type={step === 1 ? "submit" : "button"}
-                                        onClick={step === 2 ? handleFinalPayment : undefined}
+                                        form="booking-form"
+                                        type="submit"
                                         disabled={isSubmitting || (() => {
                                             if (step === 1 && checkIn && checkOut) {
                                                 const start = new Date(checkIn);
@@ -900,20 +906,10 @@ export function BookingModal({ room, isOpen, onClose }: BookingModalProps) {
                                     >
                                         {isSubmitting ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : step === 1 ? (
-                                            <>Proceed to Payment <ArrowRight className="w-5 h-5 ml-2" /></>
                                         ) : (
-                                            <>Pay ₹{totalPrice.toLocaleString()} <ArrowRight className="w-5 h-5 ml-2" /></>
+                                            <>Proceed to Payment <ArrowRight className="w-5 h-5 ml-2" /></>
                                         )}
                                     </Button>
-                                    {step === 2 && (
-                                        <button
-                                            onClick={() => setStep(1)}
-                                            className="w-full text-center text-slate-500 text-sm hover:text-slate-800 mt-4 font-medium"
-                                        >
-                                            Back to Details
-                                        </button>
-                                    )}
                                 </div>
                             )}
                         </div>
