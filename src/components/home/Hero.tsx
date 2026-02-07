@@ -16,6 +16,7 @@ export function Hero() {
                     alt="Hotel Lord Krishna Exterior"
                     fill
                     priority
+                    unoptimized
                     className="object-cover object-center md:object-center transition-transform duration-1000 scale-100 hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/50" />
