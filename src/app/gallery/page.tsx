@@ -109,7 +109,6 @@ export default function GalleryPage() {
                                         src={image.src}
                                         alt={image.alt || "Gallery Image"}
                                         fill
-                                        unoptimized
                                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
                                     {/* Overlay */}

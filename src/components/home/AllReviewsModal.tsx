@@ -65,7 +65,7 @@ export function AllReviewsModal({ reviews, onClose }: AllReviewsModalProps) {
                                 <div className="flex gap-3 overflow-x-auto pb-2">
                                     {review.images.map((img, idx) => (
                                         <div key={idx} className="relative w-24 h-24 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border border-slate-200">
-                                            <Image src={img} alt="Review" fill className="object-cover" unoptimized />
+                                            <Image src={img} alt="Review" fill className="object-cover" />
                                         </div>
                                     ))}
                                 </div>

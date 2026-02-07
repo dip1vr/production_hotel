@@ -85,7 +85,6 @@ export function AboutSection() {
                                         alt="Khatu Shyam Ji Temple"
                                         fill
                                         className="object-cover"
-                                        unoptimized
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                                 </div>
@@ -95,7 +94,6 @@ export function AboutSection() {
                                         alt="Divine Atmosphere"
                                         fill
                                         className="object-cover"
-                                        unoptimized
                                     />
                                 </div>
                             </div>
@@ -108,7 +106,6 @@ export function AboutSection() {
                                         alt="Worship"
                                         fill
                                         className="object-cover"
-                                        unoptimized
                                     />
                                 </div>
                                 <div className="relative h-56 md:h-64 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white transform hover:-translate-y-2 transition-transform duration-500">
@@ -117,7 +114,6 @@ export function AboutSection() {
                                         alt="Temple View"
                                         fill
                                         className="object-cover"
-                                        unoptimized
                                     />
                                 </div>
                                 {/* Floating Badge */}

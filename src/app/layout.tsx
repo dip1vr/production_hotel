@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -13,8 +13,16 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#ea580c",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://shyamheritage.com"),
+  authors: [{ name: "Hotel Lord Krishna" }],
   title: "Hotel Lord Krishna | Luxury Hotel in Khatu Shyam Ji",
   description: "Book luxury hotel rooms in Khatu Shyam Ji at best price. Experience royal hospitality, free cancellation & instant confirmation near the temple.",
   keywords: ["Hotel in Khatu Shyam Ji", "Luxury Stay in Khatu", "Hotel near Khatu Shyam Temple", "Best Hotel in Khatu", "Hotel Lord Krishna"],

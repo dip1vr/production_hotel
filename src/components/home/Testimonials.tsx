@@ -225,7 +225,6 @@ export function Testimonials() {
                                     alt="Full View"
                                     fill
                                     className="object-contain"
-                                    unoptimized
                                 />
                             </motion.div>
                         </motion.div>
@@ -319,7 +318,6 @@ export function Testimonials() {
                                                     alt="Review"
                                                     fill
                                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                                    unoptimized
                                                 />
                                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                                             </div>
@@ -335,7 +333,7 @@ export function Testimonials() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden relative">
                                             {review.userImage ? (
-                                                <Image src={review.userImage} alt={review.name} fill className="object-cover" unoptimized />
+                                                <Image src={review.userImage} alt={review.name} fill className="object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold bg-slate-200">
                                                     {review.name.charAt(0)}

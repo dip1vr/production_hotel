@@ -99,7 +99,6 @@ export function DiningSection() {
                                 src={content.main}
                                 alt="Dining Hall Ambience"
                                 fill
-                                unoptimized
                                 className="object-cover hover:scale-105 transition-transform duration-700"
                             />
                             <div className="absolute inset-0 bg-black/10" />
@@ -111,7 +110,6 @@ export function DiningSection() {
                                 src={content.food}
                                 alt="Delicious Food"
                                 fill
-                                unoptimized
                                 className="object-cover"
                             />
                         </div>
@@ -122,7 +120,6 @@ export function DiningSection() {
                                 src={content.drink}
                                 alt="Signature Drink"
                                 fill
-                                unoptimized
                                 className="object-cover"
                             />
                         </div>
